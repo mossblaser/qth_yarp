@@ -1,6 +1,8 @@
 `qth_yarp`: Reactive-ish bindings for Qth
 =========================================
 
+[![Build Status](https://travis-ci.org/mossblaser/qth_yarp.svg?branch=master)](https://travis-ci.org/mossblaser/qth_yarp)
+
 An alternative API for writing [Qth](http://github.com/mossblaser/qth) clients
 based on the [`yarp`](http://github.com/mossblaser/yarp) library for
 reactive(-ish) programming in Python. This library is not intended as a

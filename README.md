@@ -3,6 +3,8 @@
 
 [![Build Status](https://travis-ci.org/mossblaser/qth_yarp.svg?branch=master)](https://travis-ci.org/mossblaser/qth_yarp)
 
+[Documentation](http://qth-yarp.readthedocs.io/en/latest/)
+
 An alternative API for writing [Qth](http://github.com/mossblaser/qth) clients
 based on the [`yarp`](http://github.com/mossblaser/yarp) library for
 reactive(-ish) programming in Python. This library is not intended as a
@@ -61,3 +63,4 @@ changes, `yqrp` automatically reevaluates everything and the
     loop = asyncio.get_event_loop()
     loop.create_task(main())
     loop.run_forever()
+

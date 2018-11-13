@@ -163,6 +163,7 @@ def watch_event(topic,
 def set_property(topic, value,
                  register=False, description=None, one_to_many=True,
                  delete_on_unregister=True,
+                 ignore_no_value=True,
                  qth_client=None, loop=None, **kwargs):
     """
     Set a Qth property to the value of a continuous :py:class:`yarp.Value`.
@@ -191,6 +192,10 @@ def set_property(topic, value,
     delete_on_unregister : bool
         (Keyword-only argument). Should this value be deleted when this Qth
         client disconnects? Defaults to ``True``.
+    ignore_no_value : bool
+        (Keyword-only argument). Should the property not be written when
+        'NoValue' is set. Defaults to ``True``. If ``False``, the property will be
+        deleted when set to 'NoValue'.
     qth_client : :py:class:`qth.Client`
         The Qth :py:class:`qth.Client` object to use. If not provided, uses the
         client returned by :py:func:`get_default_qth_client`.
@@ -203,7 +208,13 @@ def set_property(topic, value,
     
     @value.on_value_changed
     def update_property(new_value):
-        loop.create_task(qth_client.set_property(topic, new_value))
+        if new_value is NoValue:
+            if ignore_no_value:
+                pass
+            else:
+                loop.create_task(qth_client.delete_property(topic))
+        else:
+            loop.create_task(qth_client.set_property(topic, new_value))
     
     async def bind_value():
         if register:
@@ -255,7 +266,8 @@ def send_event(topic, value,
     
     @value.on_value_changed
     def update_event(new_value):
-        loop.create_task(qth_client.send_event(topic, new_value))
+        if new_value is not NoValue:
+            loop.create_task(qth_client.send_event(topic, new_value))
     
     async def bind_value():
         if register:

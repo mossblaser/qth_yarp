@@ -28,14 +28,13 @@ def qth_client():
 @pytest.mark.asyncio
 async def test_get_property(qth_client, event_loop):
     a = qth_yarp.get_property("foo/bar", 123,
-                              qth_client=qth_client,
-                              loop=event_loop)
+                              qth_client=qth_client)
     
     # Default value should be provided initially
     assert a.value == 123
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # But not written to qth
     assert len(qth_client.set_property.mock_calls) == 0
@@ -54,14 +53,13 @@ async def test_get_property_register(qth_client, event_loop):
     a = qth_yarp.get_property("foo/bar", 123,
                               register=True,
                               description="Something",
-                              qth_client=qth_client,
-                              loop=event_loop)
+                              qth_client=qth_client)
     
     # Default value should be provided initially
     assert a.value == 123
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # And should have made it to Qth
     qth_client.set_property.assert_called_once_with("foo/bar", 123)
@@ -86,8 +84,7 @@ async def test_get_property_register(qth_client, event_loop):
 @pytest.mark.asyncio
 async def test_watch_event(qth_client, event_loop):
     a = qth_yarp.watch_event("foo/bar",
-                             qth_client=qth_client,
-                             loop=event_loop)
+                             qth_client=qth_client)
     
     on_value_change = Mock()
     a.on_value_changed(on_value_change)
@@ -96,7 +93,7 @@ async def test_watch_event(qth_client, event_loop):
     assert a.value is NoValue
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # Watch should be setup
     assert len(qth_client.watch_event.mock_calls) == 1
@@ -111,8 +108,7 @@ async def test_watch_event(qth_client, event_loop):
 @pytest.mark.asyncio
 async def test_watch_event_register(qth_client, event_loop):
     a = qth_yarp.watch_event("foo/bar", register=True, description="Something",
-                             qth_client=qth_client,
-                             loop=event_loop)
+                             qth_client=qth_client)
     on_value_change = Mock()
     a.on_value_changed(on_value_change)
     
@@ -120,7 +116,7 @@ async def test_watch_event_register(qth_client, event_loop):
     assert a.value is NoValue
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # Registration should have been sent
     qth_client.register.assert_called_once_with(
@@ -142,10 +138,10 @@ async def test_watch_event_register(qth_client, event_loop):
 @pytest.mark.asyncio
 async def test_set_property(qth_client, event_loop):
     a = Value(123)
-    qth_yarp.set_property("foo/bar", a, qth_client=qth_client, loop=event_loop)
+    qth_yarp.set_property("foo/bar", a, qth_client=qth_client)
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # Initial should have been sent to Qth
     qth_client.set_property.assert_called_once_with("foo/bar", 123)
@@ -155,12 +151,12 @@ async def test_set_property(qth_client, event_loop):
     
     # Setting the qth value should update Qth
     a.value = 321
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.set_property.assert_called_with("foo/bar", 321)
     
     # And again...
     a.value = 1234
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.set_property.assert_called_with("foo/bar", 1234)
 
 @pytest.mark.asyncio
@@ -169,11 +165,10 @@ async def test_set_property_register(qth_client, event_loop):
     qth_yarp.set_property("foo/bar", a,
                           register=True,
                           description="Something",
-                          qth_client=qth_client,
-                          loop=event_loop)
+                          qth_client=qth_client)
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # Initial should have been sent to Qth
     qth_client.set_property.assert_called_once_with("foo/bar", 123)
@@ -188,21 +183,21 @@ async def test_set_property_register(qth_client, event_loop):
     
     # Setting the qth value should update Qth
     a.value = 321
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.set_property.assert_called_with("foo/bar", 321)
     
     # And again...
     a.value = 1234
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.set_property.assert_called_with("foo/bar", 1234)
 
 @pytest.mark.asyncio
 async def test_send_event(qth_client, event_loop):
     a = Value()
-    qth_yarp.send_event("foo/bar", a, qth_client=qth_client, loop=event_loop)
+    qth_yarp.send_event("foo/bar", a, qth_client=qth_client)
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # No initial value should have been sent to Qth
     assert len(qth_client.send_event.mock_calls) == 0
@@ -212,12 +207,12 @@ async def test_send_event(qth_client, event_loop):
     
     # Setting the qth value should update Qth
     a.set_instantaneous_value(321)
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.send_event.assert_called_with("foo/bar", 321)
     
     # And again...
     a.set_instantaneous_value(1234)
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.send_event.assert_called_with("foo/bar", 1234)
 
 
@@ -227,11 +222,10 @@ async def test_send_event_register(qth_client, event_loop):
     qth_yarp.send_event("foo/bar", a,
                         register=True,
                         description="Something",
-                        qth_client=qth_client,
-                        loop=event_loop)
+                        qth_client=qth_client)
     
     # Allow asyncio functions to run...
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     
     # No initial value should have been sent to Qth
     assert len(qth_client.send_event.mock_calls) == 0
@@ -246,10 +240,10 @@ async def test_send_event_register(qth_client, event_loop):
     
     # Setting the qth value should update Qth
     a.set_instantaneous_value(321)
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.send_event.assert_called_with("foo/bar", 321)
     
     # And again...
     a.set_instantaneous_value(1234)
-    await asyncio.sleep(0.1, loop=event_loop)
+    await asyncio.sleep(0.1)
     qth_client.send_event.assert_called_with("foo/bar", 1234)

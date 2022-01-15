@@ -43,7 +43,7 @@ def get_default_qth_client():
 def get_property(topic, initial_value=None,
                  register=False, description=None, one_to_many=False,
                  delete_on_unregister=True,
-                 qth_client=None, loop=None, **kwargs):
+                 qth_client=None, **kwargs):
     """
     Return a (continuous) :py:class:`yarp.Value` containing the value of a qth property.
     
@@ -79,13 +79,8 @@ def get_property(topic, initial_value=None,
     qth_client : :py:class:`qth.Client`
         The Qth :py:class:`qth.Client` object to use. If not provided, uses the
         client returned by :py:func:`get_default_qth_client`.
-    loop : :py:class:`asyncio.BaseEventLoop`
-        The :py:mod:`asyncio` event loop to use. If not provided uses the lop
-        returned by :py:func:`asyncio.get_event_loop`.
     """
     qth_client = qth_client or get_default_qth_client()
-    loop = loop or asyncio.get_event_loop()
-    
     output_value = Value(initial_value)
     
     def set_value(topic, value):
@@ -103,14 +98,14 @@ def get_property(topic, initial_value=None,
                 **kwargs)
             await qth_client.set_property(topic, initial_value)
         await qth_client.watch_property(topic, set_value)
-    loop.create_task(bind_value())
+    asyncio.create_task(bind_value())
     
     return output_value
 
 
 def watch_event(topic,
               register=False, description=None, one_to_many=False,
-              qth_client=None, loop=None, **kwargs):
+              qth_client=None, **kwargs):
     """
     Return an (instantaneous) :py:class:`yarp.Value` representing a qth event.
     
@@ -133,13 +128,8 @@ def watch_event(topic,
     qth_client : :py:class:`qth.Client`
         The Qth :py:class:`qth.Client` object to use. If not provided, uses the
         client returned by :py:func:`get_default_qth_client`.
-    loop : :py:class:`asyncio.BaseEventLoop`
-        The :py:mod:`asyncio` event loop to use. If not provided uses the lop
-        returned by :py:func:`asyncio.get_event_loop`.
     """
     qth_client = qth_client or get_default_qth_client()
-    loop = loop or asyncio.get_event_loop()
-    
     output_value = Value()
     
     def set_value(topic, value):
@@ -155,7 +145,7 @@ def watch_event(topic,
                 description,
                 **kwargs)
         await qth_client.watch_event(topic, set_value)
-    loop.create_task(bind_value())
+    asyncio.create_task(bind_value())
     
     return output_value
 
@@ -164,7 +154,7 @@ def set_property(topic, value,
                  register=False, description=None, one_to_many=True,
                  delete_on_unregister=True,
                  ignore_no_value=True,
-                 qth_client=None, loop=None, **kwargs):
+                 qth_client=None, **kwargs):
     """
     Set a Qth property to the value of a continuous :py:class:`yarp.Value`.
     
@@ -199,22 +189,17 @@ def set_property(topic, value,
     qth_client : :py:class:`qth.Client`
         The Qth :py:class:`qth.Client` object to use. If not provided, uses the
         client returned by :py:func:`get_default_qth_client`.
-    loop : :py:class:`asyncio.BaseEventLoop`
-        The :py:mod:`asyncio` event loop to use. If not provided uses the lop
-        returned by :py:func:`asyncio.get_event_loop`.
     """
     qth_client = qth_client or get_default_qth_client()
-    loop = loop or asyncio.get_event_loop()
-    
     @value.on_value_changed
     def update_property(new_value):
         if new_value is NoValue:
             if ignore_no_value:
                 pass
             else:
-                loop.create_task(qth_client.delete_property(topic))
+                asyncio.create_task(qth_client.delete_property(topic))
         else:
-            loop.create_task(qth_client.set_property(topic, new_value))
+            asyncio.create_task(qth_client.set_property(topic, new_value))
     
     async def bind_value():
         if register:
@@ -227,11 +212,11 @@ def set_property(topic, value,
                 delete_on_unregister=delete_on_unregister,
                 **kwargs)
         update_property(value.value)
-    loop.create_task(bind_value())
+    asyncio.create_task(bind_value())
 
 def send_event(topic, value,
                register=False, description=None, one_to_many=True,
-               qth_client=None, loop=None, **kwargs):
+               qth_client=None, **kwargs):
     """
     Return an (instantaneous) :py:class:`yarp.Value` representing a qth event.
     
@@ -257,17 +242,12 @@ def send_event(topic, value,
     qth_client : :py:class:`qth.Client`
         The Qth :py:class:`qth.Client` object to use. If not provided, uses the
         client returned by :py:func:`get_default_qth_client`.
-    loop : :py:class:`asyncio.BaseEventLoop`
-        The :py:mod:`asyncio` event loop to use. If not provided uses the lop
-        returned by :py:func:`asyncio.get_event_loop`.
     """
     qth_client = qth_client or get_default_qth_client()
-    loop = loop or asyncio.get_event_loop()
-    
     @value.on_value_changed
     def update_event(new_value):
         if new_value is not NoValue:
-            loop.create_task(qth_client.send_event(topic, new_value))
+            asyncio.create_task(qth_client.send_event(topic, new_value))
     
     async def bind_value():
         if register:
@@ -278,7 +258,7 @@ def send_event(topic, value,
                     qth.EVENT_MANY_TO_ONE,
                 description,
                 **kwargs)
-    loop.create_task(bind_value())
+    asyncio.create_task(bind_value())
 
 
 def run_forever():
